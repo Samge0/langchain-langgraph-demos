@@ -1,0 +1,32 @@
+# LangChain/LangGraph 学习 demos 依赖（2026-09 对齐官方 1.x 线）
+langchain==1.2.3
+langchain-core==1.2.6
+langchain-openai==1.1.7
+langchain-community==0.4.1
+langchain-text-splitters==1.1.0
+langchain-huggingface==1.2.0
+langgraph==1.0.5
+langgraph-checkpoint==3.0.1
+langgraph-checkpoint-sqlite==3.1.1
+langgraph-prebuilt==1.0.5
+langchain-mcp-adapters==0.2.1
+mcp==1.25.0
+openai==2.14.0
+grandalf==0.8            # agent.get_graph().draw_ascii() 依赖
+
+# RAG：本地向量检索 + 混合检索（FAISS 本地库，无需常驻服务）
+faiss-cpu==1.12.0
+rank-bm25==0.2.2
+jieba==0.42.1
+sentence-transformers==5.2.0
+transformers==4.57.3
+torch==2.9.1
+huggingface_hub==0.36.0
+
+# 文档加载（最小集：不引入 unstructured 重依赖链）
+pypdf==6.6.0
+python-docx==1.2.0
+
+# 基础设施
+python-dotenv==1.2.1
+pydantic==2.12.5
