@@ -1,5 +1,7 @@
 # LangChain / LangGraph / Agent 学习 Demos
 
+> 🌐 **[在线宣传页](https://samge0.github.io/langchain-langgraph-demos/)** — 12 课路径、面试考点体系、技术栈一页看懂
+
 > LangChain V1.1.0 + LangGraph V1.1.0 课程资料重构，
 > 对齐 2026 年 **LangChain 1.x / LangGraph 1.x** 正式版 API（`create_agent`、Middleware、Checkpointer、MCP），
 > 每一课都是**可运行、有面试考点注释、可验证输出**的完整 demo。

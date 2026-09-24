@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LangChain / LangGraph / Agent 学习 Demos — 对齐 1.x 正式版 API</title>
+<meta name="description" content="LangChain 1.2.3 + LangGraph 1.0.5 的 12 课可运行 Demo：每课有面试考点注释、可验证输出，30/30 回归 PASS。覆盖 Tool Calling、ReAct、MCP、Checkpointer、interrupt、RAG、多智能体。">
+<style>
+:root{
+  --ink:#171717; --body:#4d4d4d; --mute:#888888; --hairline:#ebebeb; --hairline-strong:#d4d4d4;
+  --canvas:#ffffff; --soft:#fafafa; --soft2:#f5f5f5;
+  --link:#0070f3; --link-deep:#0761d1;
+  --g-dev-a:#007cf0; --g-dev-b:#00dfd8;
+  --g-preview-a:#7928ca; --g-preview-b:#ff0080;
+  --g-ship-a:#ff4d4d; --g-ship-b:#f9cb28;
+  --ok-green:#0a7a3d;
+  --mono:"Geist Mono","JetBrains Mono","SFMono-Regular",Consolas,monospace;
+  --sans:"Geist","Inter","PingFang SC","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--canvas);color:var(--body);font-family:var(--sans);line-height:1.7;font-size:16px}
+::selection{background:var(--ink);color:#fff}
+.wrap{max-width:1100px;margin:0 auto;padding:0 28px}
+a{color:var(--link);text-decoration:none}
+a:hover{color:var(--link-deep)}
+.mono{font-family:var(--mono)}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--mute);font-weight:600}
+h1,h2,h3{color:var(--ink);font-weight:600;font-family:var(--sans)}
+h2{font-size:32px;line-height:1.25;letter-spacing:-1.1px}
+h3{font-size:17px;letter-spacing:-0.2px}
+code{font-family:var(--mono);font-size:13px;background:var(--soft2);border:1px solid var(--hairline);padding:1px 7px;border-radius:6px;color:var(--ink)}
+
+nav{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--hairline)}
+.nav-in{max-width:1100px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;gap:24px}
+.brand{font-family:var(--mono);font-size:15px;color:var(--ink);font-weight:700}
+.brand b{background:linear-gradient(90deg,var(--g-dev-a),var(--g-dev-b));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+nav .links{margin-left:auto;display:flex;gap:22px;font-size:14px}
+nav .links a{color:var(--mute)}
+nav .links a:hover{color:var(--ink)}
+.nav-cta{background:var(--ink);color:#fff!important;padding:8px 18px;border-radius:8px;font-weight:600;font-family:var(--mono);font-size:13px}
+.nav-cta:hover{background:#000}
+
+.hero{padding:88px 0 56px;text-align:left;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:900px;height:420px;background:
+  radial-gradient(ellipse 40% 55% at 30% 40%,rgba(0,124,240,.10),transparent 70%),
+  radial-gradient(ellipse 35% 50% at 70% 35%,rgba(121,40,202,.09),transparent 70%),
+  radial-gradient(ellipse 30% 45% at 55% 60%,rgba(0,223,216,.09),transparent 70%);
+  pointer-events:none}
+.hero .in{position:relative}
+.hero h1{font-size:52px;line-height:1.12;letter-spacing:-2.2px;margin:20px 0 22px;max-width:15em}
+.hero h1 .gd{background:linear-gradient(90deg,var(--g-dev-a),var(--g-dev-b));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero h1 .gp{background:linear-gradient(90deg,var(--g-preview-a),var(--g-preview-b));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero .lede{font-size:18px;max-width:36em}
+.hero .lede b{color:var(--ink);font-weight:600}
+.hero-actions{display:flex;gap:14px;margin-top:32px;flex-wrap:wrap}
+.btn{display:inline-block;padding:12px 26px;border-radius:10px;font-weight:600;font-size:14.5px;font-family:var(--mono);transition:transform .15s, background .15s, box-shadow .15s}
+.btn:hover{text-decoration:none;transform:translateY(-1px)}
+.btn-primary{background:var(--ink);color:#fff;box-shadow:0 6px 20px rgba(23,23,23,.18)}
+.btn-primary:hover{background:#000}
+.btn-ghost{border:1px solid var(--hairline-strong);color:var(--ink);background:#fff}
+.btn-ghost:hover{border-color:var(--mute)}
+.hero-facts{display:flex;gap:30px;margin-top:40px;flex-wrap:wrap}
+.fact b{display:block;font-family:var(--mono);font-size:24px;color:var(--ink);font-weight:700}
+.fact span{font-size:12.5px;color:var(--mute)}
+.fact b .okmark{color:var(--ok-green)}
+
+/* ── roadmap panel ── */
+.roadmap{border:1px solid var(--hairline);border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(23,23,23,.07)}
+.rm-head{display:flex;justify-content:space-between;align-items:center;padding:15px 24px;background:var(--soft);border-bottom:1px solid var(--hairline);font-family:var(--mono);font-size:12px;color:var(--mute);letter-spacing:1px}
+.rm-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.rm-col{padding:22px 20px 26px;border-right:1px solid var(--hairline);position:relative}
+.rm-col:last-child{border-right:none}
+.rm-col .lh{font-family:var(--mono);font-size:11px;letter-spacing:1.6px;text-transform:uppercase;margin-bottom:4px;font-weight:700}
+.rm-col .ls{font-size:12.5px;color:var(--mute);margin-bottom:14px}
+.rm-col.c1 .lh{color:#0070f3}.rm-col.c2 .lh{color:#00a38c}.rm-col.c3 .lh{color:#7928ca}.rm-col.c4 .lh{color:#c9425a}
+.lsn{display:flex;gap:9px;align-items:baseline;padding:6px 8px;border-radius:8px;font-size:13px;color:var(--body)}
+.lsn:hover{background:var(--soft2)}
+.lsn .no{font-family:var(--mono);font-size:10.5px;color:var(--mute);min-width:26px}
+.lsn b{color:var(--ink);font-weight:600;font-family:var(--mono);font-size:12px}
+.rm-foot{padding:13px 24px;border-top:1px solid var(--hairline);background:var(--soft);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+.rm-foot .pass{color:var(--ok-green);font-weight:700}
+
+/* ── sections ── */
+section{padding:68px 0}
+.sec-head{max-width:680px;margin-bottom:40px}
+.sec-head p{color:var(--mute);margin-top:12px;font-size:16px}
+
+.why{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.why-card{border:1px solid var(--hairline);border-radius:14px;padding:26px;transition:border-color .2s}
+.why-card:hover{border-color:var(--hairline-strong)}
+.why-card .no{font-family:var(--mono);font-size:11px;color:var(--mute);letter-spacing:1.5px}
+.why-card h3{margin:9px 0 7px}
+.why-card p{font-size:14px}
+
+.stack{border:1px solid var(--hairline);border-radius:16px;overflow:hidden}
+.stack table{width:100%;border-collapse:collapse;font-size:14.5px}
+.stack th{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mute);text-align:left;padding:14px 24px;background:var(--soft);border-bottom:1px solid var(--hairline);font-weight:600}
+.stack td{padding:14px 24px;border-bottom:1px solid var(--hairline)}
+.stack tr:last-child td{border-bottom:none}
+.stack td:first-child{color:var(--ink);font-weight:600}
+
+.term{background:#171717;border-radius:14px;padding:0;overflow:hidden;box-shadow:0 22px 50px rgba(23,23,23,.22)}
+.term-head{display:flex;gap:7px;padding:13px 16px;border-bottom:1px solid #2a2a2a}
+.term-head i{width:11px;height:11px;border-radius:50%;background:#3a3a3a;display:block}
+.term-head i:nth-child(1){background:#ff5f57}.term-head i:nth-child(2){background:#febc2e}.term-head i:nth-child(3){background:#28c840}
+.term-body{padding:20px 22px;font-family:var(--mono);font-size:13px;line-height:2;color:#d6d6d6;overflow-x:auto}
+.term-body .cm{color:#7a7a7a}
+.term-body .pr{color:#50e3c2}
+.term-body .out{color:#9a9a9a}
+.term-body .ok{color:#5db872;font-weight:600}
+.term-body .hl{color:#7cc7ff}
+
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:stretch}
+.map{border:1px dashed var(--hairline-strong);border-radius:16px;padding:28px}
+.map h3{margin-bottom:14px}
+.map ul{list-style:none}
+.map li{padding:7px 0;font-size:14px;border-bottom:1px solid var(--hairline);display:flex;gap:12px}
+.map li{flex-wrap:wrap}
+.map li .src{overflow-wrap:anywhere}
+.duo>*{min-width:0}
+.stack{table-layout:fixed}
+.stack table{table-layout:fixed;width:100%}
+.stack td{overflow-wrap:anywhere}
+.map li:last-child{border-bottom:none}
+.map li .src{color:var(--mute);font-family:var(--mono);font-size:12.5px}
+.map li .arr{color:var(--mute)}
+.map li b{color:var(--ink);font-family:var(--mono);font-size:12.5px;font-weight:600}
+
+.cta{background:var(--soft);border:1px solid var(--hairline);border-radius:20px;padding:54px;display:grid;grid-template-columns:1.2fr .8fr;gap:36px;align-items:center}
+.cta h2{margin-bottom:12px}
+.cta p{color:var(--mute);margin-bottom:26px}
+.cta .row{display:flex;gap:14px;flex-wrap:wrap}
+
+footer{border-top:1px solid var(--hairline);padding:32px 0 42px;margin-top:70px}
+footer .wrap{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--mute);font-family:var(--mono)}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s,transform .6s}
+.reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+
+@media (max-width:960px){
+  .hero h1{font-size:38px}
+  .rm-grid{grid-template-columns:1fr 1fr}
+  .rm-col{border-bottom:1px solid var(--hairline)}
+  .rm-col:nth-child(3),.rm-col:nth-child(4){border-bottom:none}
+  .rm-col:nth-child(2){border-right:none}
+  .why{grid-template-columns:1fr}
+  .duo{grid-template-columns:1fr}
+  .cta{grid-template-columns:1fr;padding:38px 26px}
+  nav .links a:not(.nav-cta){display:none}
+}
+@media (max-width:600px){
+  .rm-grid{grid-template-columns:1fr}
+  .rm-col{border-right:none;border-bottom:1px solid var(--hairline)}
+  .rm-col:last-child{border-bottom:none}
+  .hero h1{font-size:32px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand">LC<b>·</b>LG Demos</div>
+    <div class="links">
+      <a href="#roadmap">12 课路径</a>
+      <a href="#why">为什么是这个顺序</a>
+      <a href="#stack">技术栈</a>
+      <a class="nav-cta" href="https://github.com/Samge0/langchain-langgraph-demos" target="_blank" rel="noopener">GitHub →</a>
+    </div>
+  </div>
+</nav>
+
+<header class="wrap hero">
+  <div class="in">
+    <div class="eyebrow">LangChain 1.2.3 · LangGraph 1.0.5 · 30/30 PASS</div>
+    <h1>十二课，从会<span class="gd">说话</span>到会<span class="gp">编排</span>。</h1>
+    <p class="lede">课程资料重构为对齐 2026 年 <b>LangChain 1.x / LangGraph 1.x 正式版 API</b> 的 12 课可运行 Demo——<b>create_agent</b>、Middleware、Checkpointer、MCP。每一课都是<b>可运行、有面试考点注释、可验证输出</b>的完整 demo。</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="https://github.com/Samge0/langchain-langgraph-demos" target="_blank" rel="noopener">GitHub 仓库</a>
+      <a class="btn btn-ghost" href="#roadmap">看 12 课路径 ↓</a>
+    </div>
+    <div class="hero-facts">
+      <div class="fact"><b>12</b><span>课 · 每课 30–60 分钟</span></div>
+      <div class="fact"><b>4 层</b><span>模型 → 工具 → 图引擎 → 工程化</span></div>
+      <div class="fact"><b><span class="okmark">30/30</span></b><span>回归 PASS · run_all.py 可重跑</span></div>
+      <div class="fact"><b>100%</b><span>本地运行 · vLLM + CPU embedding</span></div>
+    </div>
+  </div>
+</header>
+
+<section id="roadmap" style="padding-top:8px">
+  <div class="wrap">
+    <div class="roadmap reveal">
+      <div class="rm-head"><span>demos/ · 学习路线图（建议顺序）</span><span>每课 30–60 分钟</span></div>
+      <div class="rm-grid">
+        <div class="rm-col c1">
+          <div class="lh">基础层</div>
+          <div class="ls">模型会「说话」</div>
+          <div class="lsn"><span class="no">L01</span><span><b>hello_llm</b> — OpenAI SDK vs ChatOpenAI，流式/异步/批量</span></div>
+          <div class="lsn"><span class="no">L02</span><span><b>prompts_structured_output</b> — 提示词工程 + Pydantic（面试必考）</span></div>
+          <div class="lsn"><span class="no">L03</span><span><b>lcel_chains</b> — LCEL 声明式管线，并行/分支/回退</span></div>
+        </div>
+        <div class="rm-col c2">
+          <div class="lh">工具层</div>
+          <div class="ls">模型会「动手」</div>
+          <div class="lsn"><span class="no">L04</span><span><b>tool_calling</b> — 手写 Tool Calling 循环，Agent 的原子能力</span></div>
+          <div class="lsn"><span class="no">L05</span><span><b>react_agent</b> — create_agent + AgentLoop，ReAct 循环</span></div>
+          <div class="lsn"><span class="no">L06</span><span><b>mcp</b> — stdio / streamable-http 服务端 + 客户端接入</span></div>
+        </div>
+        <div class="rm-col c3">
+          <div class="lh">图引擎层</div>
+          <div class="ls">模型会「编排」</div>
+          <div class="lsn"><span class="no">L07</span><span><b>langgraph_basics</b> — State/Node/Edge/Reducer/条件边/Super-Step</span></div>
+          <div class="lsn"><span class="no">L08</span><span><b>memory_checkpointer</b> — 短期→线程→长期→时间旅行</span></div>
+          <div class="lsn"><span class="no">L09</span><span><b>human_in_the_loop</b> — interrupt + Command(resume)（面试高频）</span></div>
+        </div>
+        <div class="rm-col c4">
+          <div class="lh">工程化层</div>
+          <div class="ls">模型会「上线」</div>
+          <div class="lsn"><span class="no">L10</span><span><b>middleware_context</b> — Summarization 压缩、敏感工具拦截</span></div>
+          <div class="lsn"><span class="no">L11</span><span><b>rag</b> — FAISS+BM25 混合检索→RRF→引用→可评测</span></div>
+          <div class="lsn"><span class="no">L12</span><span><b>multi_agent</b> — Supervisor 任务分解、专业 Agent 协作</span></div>
+        </div>
+      </div>
+      <div class="rm-foot"><span>环境：本机 vLLM Qwen3.8-9B + bge-small-zh-v1.5 + FAISS/BM25，无需 Docker 常驻</span><span class="pass">VERIFICATION 30/30 PASS ✓</span></div>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Pedagogy</div>
+      <h2>为什么是这个顺序——对应面试考察体系</h2>
+      <p>不是 API 文档的目录顺序，而是面试官确认你「懂底层而不只是会调包」的考察顺序。</p>
+    </div>
+    <div class="why">
+      <div class="why-card reveal">
+        <div class="no">L01–L03 · MODEL I/O</div>
+        <h3>先证明你懂底层</h3>
+        <p>消息模型、结构化输出原理——面试官确认你理解框架下面的东西，而不是只会 import。</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="no">L04 · ATOMIC</div>
+        <h3>Agent 的原子能力</h3>
+        <p>Tool Calling 本质是「模型输出 JSON → 你执行 → 结果回填 messages」。面试必考「Agent 的执行循环是什么」，这一课让你能手写它——create_agent 只是把这个循环自动化。</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="no">L05–L06 · FRAMEWORK</div>
+        <h3>用框架的正确姿势</h3>
+        <p>create_agent 的 AgentLoop、MCP 工具生态——2025+ 行业标准的工具接入协议。</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="no">L07–L09 · CORE</div>
+        <h3>LangGraph 三大高频考点</h3>
+        <p>状态图 = 可控的 Agent 编排；Checkpointer = 记忆；interrupt = 人机协同。这三点是 Agent 岗面试的最高频考点。</p>
+      </div>
+      <div class="why-card reveal" style="grid-column:1/-1">
+        <div class="no">L10–L12 · PRODUCTION</div>
+        <h3>生产化收尾</h3>
+        <p>上下文工程（token 预算、Summarization 压缩）→ RAG 全链路优化（切分、混合检索、重排、查询改写）→ 多智能体任务分解。至此你能在面试里完整回答「一个 Agent 系统从原型到上线要经过什么」。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="stack">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Stack &amp; Verification</div>
+      <h2>全部本地运行，回归可重跑</h2>
+    </div>
+    <div class="duo">
+      <div class="stack reveal">
+        <table>
+          <thead><tr><th>项</th><th>值</th></tr></thead>
+          <tbody>
+            <tr><td>LLM</td><td>本机 vLLM（Qwen3.8-9B，OpenAI 兼容，auto-tool-choice + tool parser）</td></tr>
+            <tr><td>Embedding</td><td>本地 <span class="mono">bge-small-zh-v1.5</span>（512 维，ModelScope 拉取，离线可用）</td></tr>
+            <tr><td>向量库</td><td>FAISS(cpu) + BM25 —— 概念等价 Milvus 稠密+稀疏混合检索</td></tr>
+            <tr><td>Python</td><td>3.11 · langchain 1.2.3 / langgraph 1.0.5（与课件一致）</td></tr>
+            <tr><td>回归</td><td><span class="mono">run_all.py</span> 输出 VERIFICATION.md，30/30 PASS（2026-09-06）</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="term reveal" aria-label="运行示例终端">
+        <div class="term-head"><i></i><i></i><i></i></div>
+        <div class="term-body">
+<span class="cm"># 首次使用</span><br>
+<span class="pr">$</span> cp .env.example .env <span class="cm"># 填入 vLLM api-key</span><br>
+<span class="pr">$</span> uv venv .venv --python 3.11<br>
+<span class="pr">$</span> uv pip install -r requirements.txt<br>
+<span class="cm"># 每课运行（demos/ 目录下）</span><br>
+<span class="pr">$</span> python -m L04_tool_calling.01_raw_openai_tool_call<br>
+<span class="out">[agent] model -&gt; tool_call: search_order(order_id="A102")</span><br>
+<span class="out">[agent] tool -&gt; {"status":"shipped","eta":"09-26"}</span><br>
+<span class="ok">[done] 循环 2 步收敛 · 输出与 VERIFICATION.md 一致 ✓</span><br>
+<span class="cm"># 全量回归</span><br>
+<span class="pr">$</span> python run_all.py<br>
+<span class="ok">VERIFICATION: 30/30 PASS ✓</span> <span class="hl">-&gt; VERIFICATION.md</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="eyebrow">Provenance</div>
+      <h2>与 source 课程资料的对照</h2>
+      <p>不是推倒重写，而是逐文件映射 + 1.x API 对齐 + 面试考点补充。</p>
+    </div>
+    <div class="map reveal">
+      <ul>
+        <li><span class="src">langchain_1208_demo/model_io/（13 文件）</span><span class="arr">→</span><span><b>L01–L03</b> 重写为 1.x API + 中文注释 + 面试考点</span></li>
+        <li><span class="src">langchain/agents · langgraph/agents</span><span class="arr">→</span><span><b>L04–L06</b> raw 循环是新增的面试深化内容</span></li>
+        <li><span class="src">langgraph/graph/（12 文件）</span><span class="arr">→</span><span><b>L07</b> 合并为渐进式一课</span></li>
+        <li><span class="src">checkpointer/ · middleware/</span><span class="arr">→</span><span><b>L08 · L10</b> 补充时间旅行、token 触发压缩原理</span></li>
+        <li><span class="src">rag/（Milvus+BGE-M3）</span><span class="arr">→</span><span><b>L11</b> FAISS+BM25 等价概念映射，无需 Docker</span></li>
+        <li><span class="src">RAG优化分享.txt</span><span class="arr">→</span><span><b>L11</b> README「RAG 优化军火库」：大小块、混合检索、重排、查询改写</span></li>
+        <li><span class="src">两份 docx 课件</span><span class="arr">→</span><span>各课 README 的「面试考点」小节</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="wrap" style="padding-top:0">
+  <div class="cta reveal">
+    <div>
+      <h2>从 L01 开始</h2>
+      <p>每课 README 含运行方式、逐行中文注释与「面试考点」小节——学完直接能答，不用二次整理。</p>
+      <div class="row">
+        <a class="btn btn-primary" href="https://github.com/Samge0/langchain-langgraph-demos" target="_blank" rel="noopener">GitHub 仓库</a>
+        <a class="btn btn-ghost" href="https://github.com/Samge0/langchain-langgraph-demos/blob/main/VERIFICATION.md" target="_blank" rel="noopener">查看 VERIFICATION.md</a>
+      </div>
+    </div>
+    <div class="term" style="box-shadow:none">
+      <div class="term-head"><i></i><i></i><i></i></div>
+      <div class="term-body">
+<span class="cm"># 建议节奏</span><br>
+<span class="pr">$</span> Week 1 · L01–L03 基础层<br>
+<span class="pr">$</span> Week 2 · L04–L06 工具层<br>
+<span class="pr">$</span> Week 3 · L07–L09 图引擎层<br>
+<span class="pr">$</span> Week 4 · L10–L12 工程化层<br>
+<span class="ok">30/30 PASS · 每课 30–60 min ✓</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>langchain-langgraph-demos — 对齐 1.x 正式版 API 的 12 课</div>
+    <div>可运行 · 有考点 · 可验证</div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(function(el){
+    if(reduced){ el.classList.add('in'); } else { io.observe(el); }
+  });
+})();
+</script>
+</body>
+</html>
