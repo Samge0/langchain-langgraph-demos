@@ -10,7 +10,7 @@ langgraph-checkpoint==3.0.1
 langgraph-checkpoint-sqlite==3.1.1
 langgraph-prebuilt==1.0.5
 langchain-mcp-adapters==0.2.1
-mcp==1.25.0
+mcp==1.30.0
 openai==2.14.0
 grandalf==0.8            # agent.get_graph().draw_ascii() 依赖
 
